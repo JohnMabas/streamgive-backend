@@ -71,7 +71,11 @@ async function handleStreamCreated(event: ContractEvent): Promise<void> {
         createdTxHash: event.txHash,
         createdAt: new Date(event.ledgerClosedAt),
       },
-      update: {},
+      // Set createdTxHash in the update path too: if the stream row already
+      // exists (e.g. from a replay after a partial write or a restart),
+      // fill in the hash.  This is safe because a replay of the same
+      // `created` event always carries the same transaction hash.
+      update: { createdTxHash: event.txHash },
     });
 
     await tx.streamEvent.create({
